@@ -9,6 +9,7 @@ use Filament\Resources\Form;
 use Filament\Resources\Table;
 use Filament\Resources\Resource;
 use Forms\Components\MultiSelect;
+use Filament\Forms\Components\Grid;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\BooleanColumn;
 use App\Filament\Resources\UserResource\Pages;
+use Filament\Forms\Components\Hidden;
 
 class UserResource extends Resource
 {
@@ -29,10 +31,12 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
 
-    protected static function getNavigationLabel(): string
-    {
-        return trans('filament-user::user.resource.label');
-    }
+    protected static ?string $navigationLabel = 'Pengguna';
+
+    // protected static function getNavigationLabel(): string
+    // {
+    //     return trans('filament-user::user.resource.label');
+    // }
 
     public static function getPluralLabel(): string
     {
@@ -57,6 +61,14 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         $rows = [
+            Grid::make(1)->schema([
+                FileUpload::make('avatar')
+                ->label('FOTO PROFIL')
+                ->disk('public')
+                ->directory('images')
+                ->avatar()
+                ->required()
+            ]),
             TextInput::make('name')->required()->label(trans('filament-user::user.resource.name')),
             TextInput::make('email')->email()->required()->label(trans('filament-user::user.resource.email')),
             Forms\Components\TextInput::make('password')->label(trans('filament-user::user.resource.password'))
@@ -72,12 +84,13 @@ class UserResource extends Resource
                         return $user->password;
                     }
             }),
-            TextInput::make('nip')->label('NIP')->required()->unique(),
-            FileUpload::make('avatar')
-                ->label('FOTO PROFIL')
-                ->disk('public')
-                ->directory('images')
-                ->required(),
+            TextInput::make('nip')
+                ->label('NIP')
+                ->dehydrated(true)
+                ->required()
+                ->unique(),
+            Hidden::make('nip')
+                ->disabled(),
             Toggle::make('is_admin')->label('ADMIN')->required(),
             Toggle::make('is_active')->label('AKTIF'),
         ];
